@@ -1,6 +1,6 @@
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, MapPin, Phone, X } from "lucide-react";
+import { Instagram, Loader2, MapPin, Phone, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { LOGO } from "../config/images";
@@ -174,6 +174,15 @@ export default function Footer() {
                 aria-label="Phone"
               >
                 <Phone size={18} />
+              </a>
+              <a
+                href="https://www.instagram.com/distum.cdmx/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-muted-foreground hover:text-white transition-colors"
+                aria-label="Instagram"
+              >
+                <Instagram size={18} />
               </a>
             </div>
           </div>

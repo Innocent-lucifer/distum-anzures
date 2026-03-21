@@ -1,5 +1,5 @@
 import { Toaster } from "@/components/ui/sonner";
-import { CalendarDays, FileText } from "lucide-react";
+import { FileText } from "lucide-react";
 import { useEffect, useState } from "react";
 import AdminPanel from "./components/AdminPanel";
 import AmenitiesSection from "./components/AmenitiesSection";
@@ -25,12 +25,6 @@ declare global {
   }
 }
 
-const WA_NUMBER = "5215521864824";
-const WA_VISIT_MSG = encodeURIComponent(
-  "Hola, me gustaría agendar una visita a Distum Anzures. ¿Cuándo tienen disponibilidad?",
-);
-const WA_VISIT_LINK = `https://wa.me/${WA_NUMBER}?text=${WA_VISIT_MSG}`;
-
 function FloatingBrochureButton({ onClick }: { onClick: () => void }) {
   const { t } = useLang();
   return (
@@ -48,27 +42,6 @@ function FloatingBrochureButton({ onClick }: { onClick: () => void }) {
       <FileText size={14} />
       {t("Brochure", "Brochure")}
     </button>
-  );
-}
-
-function ScheduleVisitButton() {
-  const { t } = useLang();
-  return (
-    <a
-      href={WA_VISIT_LINK}
-      target="_blank"
-      rel="noopener noreferrer"
-      data-ocid="visit.open_modal_button"
-      aria-label={t("Agendar Visita", "Schedule a Visit")}
-      className="fixed bottom-40 left-6 z-30 flex items-center gap-2 px-4 py-2.5 rounded-full border border-[#c9a25b] text-[#c9a25b] hover:bg-[#c9a25b] hover:text-[#071a2b] transition-all duration-200 text-sm font-semibold shadow-lg"
-      style={{
-        background: "rgba(7,18,34,0.92)",
-        backdropFilter: "blur(12px)",
-      }}
-    >
-      <CalendarDays size={14} />
-      {t("Agendar Visita", "Schedule Visit")}
-    </a>
   );
 }
 
@@ -100,7 +73,6 @@ function AppInner() {
       <Footer />
       <WhatsAppButton />
       <FloatingBrochureButton onClick={() => setBrochureOpen(true)} />
-      <ScheduleVisitButton />
       <BrochureModal
         open={brochureOpen}
         onClose={() => setBrochureOpen(false)}
