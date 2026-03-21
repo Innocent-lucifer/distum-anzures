@@ -1,0 +1,283 @@
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=Montserrat:wght@300;400;500;600;700;800;900&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --radius: 0.75rem;
+    --background: 0.13 0.04 240;
+    --foreground: 1 0 0;
+    --card: 0.22 0.04 240;
+    --card-foreground: 1 0 0;
+    --popover: 0.2 0.04 240;
+    --popover-foreground: 1 0 0;
+    --primary: 0.72 0.1 75;
+    --primary-foreground: 0.13 0.04 240;
+    --secondary: 0.27 0.04 240;
+    --secondary-foreground: 1 0 0;
+    --muted: 0.2 0.04 240;
+    --muted-foreground: 0.7 0.02 240;
+    --accent: 0.72 0.1 75;
+    --accent-foreground: 0.13 0.04 240;
+    --destructive: 0.577 0.245 27.325;
+    --destructive-foreground: 1 0 0;
+    --border: 0.27 0.04 240;
+    --input: 0.25 0.04 240;
+    --ring: 0.72 0.1 75;
+    --chart-1: 0.646 0.222 41.116;
+    --chart-2: 0.6 0.118 184.704;
+    --chart-3: 0.398 0.07 227.392;
+    --chart-4: 0.828 0.189 84.429;
+    --chart-5: 0.769 0.188 70.08;
+    --sidebar: 0.17 0.05 240;
+    --sidebar-foreground: 1 0 0;
+    --sidebar-primary: 0.72 0.1 75;
+    --sidebar-primary-foreground: 0.13 0.04 240;
+    --sidebar-accent: 0.27 0.04 240;
+    --sidebar-accent-foreground: 1 0 0;
+    --sidebar-border: 0.27 0.04 240;
+    --sidebar-ring: 0.72 0.1 75;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: "Montserrat", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+@layer components {
+  .glass-navbar {
+    background: rgba(14, 30, 48, 0.6);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+  }
+
+  .glass-modal-bg {
+    background: rgba(7, 26, 43, 0.93);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 1rem;
+  }
+
+  .glass-card {
+    background: rgba(20, 40, 60, 0.65);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+  }
+
+  .btn-gold {
+    background: linear-gradient(135deg, #c9a25b 0%, #d4b06a 50%, #c9a25b 100%);
+    background-size: 200% 100%;
+    color: #071a2b;
+    font-weight: 700;
+    font-family: "Montserrat", sans-serif;
+    letter-spacing: 0.05em;
+    transition: background-position 0.4s ease, transform 0.2s ease, box-shadow
+      0.2s ease;
+  }
+
+  .btn-gold:hover {
+    background-position: right center;
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(201, 162, 91, 0.35);
+  }
+
+  .btn-outline-white {
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    color: #ffffff;
+    background: transparent;
+    transition: background 0.2s, border-color 0.2s;
+  }
+
+  .btn-outline-white:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: #ffffff;
+  }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(36px);
+    transition: opacity 0.75s cubic-bezier(0.22, 1, 0.36, 1), transform 0.75s
+      cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .reveal.revealed {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .reveal-delay-1 {
+    transition-delay: 0.1s;
+  }
+  .reveal-delay-2 {
+    transition-delay: 0.2s;
+  }
+  .reveal-delay-3 {
+    transition-delay: 0.3s;
+  }
+  .reveal-delay-4 {
+    transition-delay: 0.4s;
+  }
+
+  .property-card {
+    transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.3s
+      ease;
+  }
+
+  .property-card:hover {
+    transform: translateY(-6px) scale(1.01);
+    box-shadow: 0 20px 48px rgba(0, 0, 0, 0.45), 0 0 0 1px
+      rgba(201, 162, 91, 0.2);
+  }
+
+  .amenity-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    overflow: hidden;
+  }
+
+  .amenity-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+  }
+
+  .amenity-card:hover .amenity-overlay {
+    opacity: 1;
+  }
+
+  .amenity-overlay {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .gold-text {
+    color: #c9a25b;
+  }
+
+  .gold-border {
+    border-color: rgba(201, 162, 91, 0.4);
+  }
+
+  .whatsapp-pulse::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: #25d366;
+    animation: wa-pulse 2s ease-out infinite;
+    z-index: -1;
+  }
+
+  .text-gold {
+    color: #c9a25b;
+  }
+  .bg-navy-deep {
+    background-color: #071a2b;
+  }
+  .bg-navy-card {
+    background-color: #1b2d3f;
+  }
+  .border-gold {
+    border-color: rgba(201, 162, 91, 0.35);
+  }
+}
+
+@layer utilities {
+  .font-display {
+    font-family: "Playfair Display", serif;
+  }
+
+  .font-sans-brand {
+    font-family: "Montserrat", sans-serif;
+  }
+}
+
+@keyframes heroFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes wa-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+@keyframes shimmer-move {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+@keyframes float-card {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.hero-animate-1 {
+  animation: heroFadeUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.2s both;
+}
+.hero-animate-2 {
+  animation: heroFadeUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.4s both;
+}
+.hero-animate-3 {
+  animation: heroFadeUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.6s both;
+}
+.hero-animate-4 {
+  animation: heroFadeUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.8s both;
+}
+.hero-animate-5 {
+  animation: heroFadeUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) 1.0s both;
+}
+
+.float-anim {
+  animation: float-card 4s ease-in-out infinite;
+}
+
+/* Custom slider gold thumb */
+[data-slot="slider-thumb"] {
+  background: #c9a25b !important;
+  border-color: #c9a25b !important;
+}
+[data-slot="slider-range"] {
+  background: #c9a25b !important;
+}
+
+/* Dialog custom overrides */
+.dialog-glass > div[role="dialog"] {
+  background: rgba(7, 26, 43, 0.93);
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
