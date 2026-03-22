@@ -14,6 +14,9 @@ import { useLang } from "../contexts/LanguageContext";
 import { useActor } from "../hooks/useActor";
 import { useGetBrochureCount } from "../hooks/useQueries";
 
+// Get your free form ID at https://formspree.io — replace REPLACE_WITH_YOUR_FORM_ID
+const FORMSPREE_ENDPOINT = "https://formspree.io/f/REPLACE_WITH_YOUR_FORM_ID";
+
 const WA_NUMBER = "5215521864824";
 const WA_MSG = encodeURIComponent(
   "Hola, me interesa conocer más sobre Distum Anzures. ¿Podrían enviarme información sobre disponibilidad y precios?",
@@ -49,29 +52,61 @@ export default function BrochureModal({ open, onClose }: Props) {
       return;
     }
     setLoading(true);
+
+    let icpSuccess = false;
+    let formspreeSuccess = false;
+
+    // 1. Try ICP first
     try {
-      await actor?.captureLead({
-        name,
-        email,
-        phone,
-        language: language as any,
-        intent: "living" as any,
-        source: "brochure" as any,
-        timestamp: BigInt(Date.now()),
-      } as any);
-      await actor?.recordBrochureDownload(email);
+      if (actor) {
+        await actor.captureLead({
+          name,
+          email,
+          phone,
+          language: language as any,
+          intent: "living" as any,
+          source: "brochure" as any,
+          timestamp: BigInt(Date.now()),
+        } as any);
+        await actor.recordBrochureDownload(email);
+        icpSuccess = true;
+      }
+    } catch {
+      // ICP failed — will fall through to Formspree
+    }
+
+    // 2. If ICP didn't succeed, try Formspree
+    if (!icpSuccess) {
+      try {
+        const res = await fetch(FORMSPREE_ENDPOINT, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify({ name, email, phone, language }),
+        });
+        if (res.ok) {
+          formspreeSuccess = true;
+        }
+      } catch {
+        // Formspree also failed
+      }
+    }
+
+    setLoading(false);
+
+    if (icpSuccess || formspreeSuccess) {
       window.fbq?.("track", "Lead", { source: "brochure" });
       window.gtag?.("event", "generate_lead", { source: "brochure" });
       setSuccess(true);
-    } catch {
+    } else {
       toast.error(
         t(
           "Ocurrió un error. Intenta de nuevo.",
           "An error occurred. Please try again.",
         ),
       );
-    } finally {
-      setLoading(false);
     }
   };
 
