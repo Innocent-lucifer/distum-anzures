@@ -53,6 +53,22 @@
     @apply bg-background text-foreground;
     font-family: "Montserrat", sans-serif;
     -webkit-font-smoothing: antialiased;
+    overscroll-behavior: none;
+  }
+
+  /* Eliminate 300ms tap delay and remove tap highlight on all interactive elements */
+  button,
+  a,
+  [role="button"] {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  /* Ensure inputs are legible on mobile (16px prevents iOS zoom) */
+  input,
+  select,
+  textarea {
+    font-size: 16px;
   }
 }
 
@@ -192,6 +208,28 @@
   }
   .border-gold {
     border-color: rgba(201, 162, 91, 0.35);
+  }
+
+  /* Mobile drawer animated transitions */
+  .mobile-drawer {
+    transition: opacity 0.25s ease, transform 0.25s
+      cubic-bezier(0.22, 1, 0.36, 1), max-height 0.3s
+      cubic-bezier(0.22, 1, 0.36, 1);
+    overflow: hidden;
+  }
+
+  .mobile-drawer-open {
+    opacity: 1;
+    transform: translateY(0);
+    max-height: 500px;
+    pointer-events: auto;
+  }
+
+  .mobile-drawer-closed {
+    opacity: 0;
+    transform: translateY(-8px);
+    max-height: 0;
+    pointer-events: none;
   }
 }
 

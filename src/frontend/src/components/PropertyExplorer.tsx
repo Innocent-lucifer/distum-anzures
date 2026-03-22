@@ -1,5 +1,5 @@
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { PROPERTY_IMAGES } from "../config/images";
 import { useLang } from "../contexts/LanguageContext";
 import { useActor } from "../hooks/useActor";
@@ -166,14 +166,23 @@ const fmt = (n: number) =>
   }).format(n);
 
 export default function PropertyExplorer() {
-  const { t } = useLang();
+  const { lang, t } = useLang();
   const { actor } = useActor();
   const [tab, setTab] = useState<"apartments" | "offices">("apartments");
   const [filter, setFilter] = useState<Filter>("all");
   const [selected, setSelected] = useState<Property | null>(null);
-  const [submitting, setSubmitting] = useState(false);
   const sectionRef = useScrollReveal<HTMLElement>();
   const { data: availability = {} } = useGetPropertyAvailability();
+
+  // Escape key to close modal
+  useEffect(() => {
+    if (!selected) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setSelected(null);
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [selected]);
 
   const filtered = PROPERTIES.filter((p) => {
     if (p.tab !== tab) return false;
@@ -181,10 +190,20 @@ export default function PropertyExplorer() {
     return p.type === filter;
   });
 
-  const handleInterest = async (prop: Property) => {
-    setSubmitting(true);
-    try {
-      await actor?.captureLead({
+  // Fires WhatsApp immediately — no delay, backend call is fire-and-forget
+  const handleInterest = (prop: Property) => {
+    window.open(
+      `https://wa.me/5215521864824?text=Hola%2C%20me%20interesa%20conocer%20m%C3%A1s%20sobre%20${encodeURIComponent(prop.nameEs)}%20en%20Distum%20Anzures.%20%C2%BFPodr%C3%ADan%20enviarme%20informaci%C3%B3n%20sobre%20disponibilidad%20y%20precios%3F`,
+      "_blank",
+    );
+    setSelected(null);
+    // Background analytics + backend — no await, never blocks UX
+    window.gtag?.("event", "generate_lead", {
+      source: "property",
+      property: prop.id,
+    });
+    actor
+      ?.captureLead({
         name: "Interesado",
         email: "lead@distumanzures.com",
         phone: "",
@@ -192,21 +211,8 @@ export default function PropertyExplorer() {
         intent: "living" as any,
         source: "property" as any,
         timestamp: BigInt(Date.now()),
-      } as any);
-      window.gtag?.("event", "generate_lead", {
-        source: "property",
-        property: prop.id,
-      });
-    } catch {
-      // silent
-    } finally {
-      setSubmitting(false);
-    }
-    window.open(
-      `https://wa.me/5215521864824?text=Hola%2C%20me%20interesa%20conocer%20m%C3%A1s%20sobre%20${encodeURIComponent(prop.nameEs)}%20en%20Distum%20Anzures.%20%C2%BFPodr%C3%ADan%20enviarme%20informaci%C3%B3n%20sobre%20disponibilidad%20y%20precios%3F`,
-      "_blank",
-    );
-    setSelected(null);
+      } as any)
+      .catch(() => {});
   };
 
   const FILTERS: { value: Filter; es: string; en: string }[] = [
@@ -262,14 +268,14 @@ export default function PropertyExplorer() {
         </div>
 
         {tab === "apartments" && (
-          <div className="flex flex-wrap justify-center gap-2 mb-8">
+          <div className="flex overflow-x-auto pb-2 justify-start sm:justify-center gap-2 mb-8 snap-x -mx-6 px-6 sm:mx-0 sm:px-0 sm:flex-wrap">
             {FILTERS.map((f) => (
               <button
                 key={f.value}
                 type="button"
                 onClick={() => setFilter(f.value)}
                 data-ocid="properties.toggle"
-                className="px-4 py-1.5 rounded-full text-xs font-semibold border transition-all"
+                className="px-4 py-1.5 rounded-full text-xs font-semibold border transition-all shrink-0 snap-start"
                 style={
                   filter === f.value
                     ? { borderColor: "rgba(201,162,91,0.7)", color: "#C9A25B" }
@@ -355,18 +361,17 @@ export default function PropertyExplorer() {
                     {fmt(prop.price)}
                   </p>
                   <ul className="space-y-1">
-                    {(t("es", "en") === "es"
-                      ? prop.featuresEs
-                      : prop.featuresEn
-                    ).map((f) => (
-                      <li
-                        key={f}
-                        className="text-xs text-white/60 flex items-center gap-1.5"
-                      >
-                        <span className="w-1 h-1 rounded-full bg-primary inline-block" />
-                        {f}
-                      </li>
-                    ))}
+                    {(lang === "es" ? prop.featuresEs : prop.featuresEn).map(
+                      (f) => (
+                        <li
+                          key={f}
+                          className="text-xs text-white/60 flex items-center gap-1.5"
+                        >
+                          <span className="w-1 h-1 rounded-full bg-primary inline-block" />
+                          {f}
+                        </li>
+                      ),
+                    )}
                   </ul>
                   <p className="text-xs gold-text font-semibold mt-4">
                     {t("Más información →", "More info →")}
@@ -389,9 +394,9 @@ export default function PropertyExplorer() {
             className="absolute inset-0"
             style={{ background: "rgba(0,0,0,0.80)" }}
             onClick={() => setSelected(null)}
-            onKeyDown={(e) => e.key === "Escape" && setSelected(null)}
+            onKeyDown={() => {}}
           />
-          <div className="glass-modal-bg relative w-full max-w-xl z-10 overflow-hidden">
+          <div className="glass-modal-bg relative w-full max-w-xl z-10 overflow-hidden max-h-[90vh] overflow-y-auto">
             <button
               type="button"
               onClick={() => setSelected(null)}
@@ -401,7 +406,7 @@ export default function PropertyExplorer() {
               <X size={18} />
             </button>
 
-            <div className="relative h-56 overflow-hidden">
+            <div className="relative h-56 overflow-hidden shrink-0">
               <img
                 src={selected.image}
                 alt={selected.nameEs}
@@ -430,7 +435,7 @@ export default function PropertyExplorer() {
               </div>
             </div>
 
-            <div className="p-6">
+            <div className="p-5 sm:p-6">
               <div className="flex items-start justify-between mb-3">
                 <div>
                   <span
@@ -459,7 +464,7 @@ export default function PropertyExplorer() {
               </p>
 
               <ul className="space-y-2 mb-6">
-                {(t("es", "en") === "es"
+                {(lang === "es"
                   ? selected.featuresEs
                   : selected.featuresEn
                 ).map((f) => (
@@ -479,7 +484,6 @@ export default function PropertyExplorer() {
               <button
                 type="button"
                 onClick={() => handleInterest(selected)}
-                disabled={submitting}
                 data-ocid="properties.confirm_button"
                 className="btn-gold w-full py-3 rounded-lg text-sm font-bold tracking-wider"
               >

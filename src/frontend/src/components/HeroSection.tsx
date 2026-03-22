@@ -33,13 +33,13 @@ export default function HeroSection({ onBrochureClick }: Props) {
         }}
       />
 
-      <div className="relative z-10 w-full max-w-6xl mx-auto px-6 md:px-10 pt-32 pb-20">
+      <div className="relative z-10 w-full max-w-6xl mx-auto px-6 md:px-10 pt-28 sm:pt-32 pb-16 sm:pb-20">
         <div className="max-w-2xl">
           <p className="hero-animate-1 text-xs font-bold tracking-[0.25em] gold-text mb-4 uppercase">
             {t("ÚLTIMAS UNIDADES DISPONIBLES", "FINAL UNITS AVAILABLE")}
           </p>
 
-          <h1 className="hero-animate-2 font-display text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-[1.05] mb-4">
+          <h1 className="hero-animate-2 font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-[1.05] mb-4">
             {lang === "es" ? (
               <>
                 Vive en el corazón
@@ -66,19 +66,19 @@ export default function HeroSection({ onBrochureClick }: Props) {
             )}
           </p>
 
-          <div className="hero-animate-5 flex flex-wrap gap-4">
+          <div className="hero-animate-5 flex flex-col sm:flex-row gap-3 sm:gap-4">
             <button
               type="button"
               onClick={onBrochureClick}
               data-ocid="hero.primary_button"
-              className="btn-gold px-7 py-3.5 rounded-lg text-sm font-bold tracking-wider"
+              className="btn-gold w-full sm:w-auto px-7 py-3.5 rounded-lg text-sm font-bold tracking-wider text-center"
             >
               {t("Descargar Brochure", "Download Brochure")}
             </button>
             <a
               href="#properties"
               data-ocid="hero.secondary_button"
-              className="btn-outline-white px-7 py-3.5 rounded-lg text-sm font-semibold tracking-wider"
+              className="btn-outline-white w-full sm:w-auto px-7 py-3.5 rounded-lg text-sm font-semibold tracking-wider text-center"
             >
               {t("Explorar Propiedades", "Explore Properties")}
             </a>

@@ -1,5 +1,5 @@
 import { X } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AMENITY_IMAGES } from "../config/images";
 import { useLang } from "../contexts/LanguageContext";
 import { useScrollReveal } from "../hooks/useScrollReveal";
@@ -81,6 +81,16 @@ export default function AmenitiesSection() {
   const [selected, setSelected] = useState<Amenity | null>(null);
   const sectionRef = useScrollReveal<HTMLElement>();
 
+  // Escape key to close modal
+  useEffect(() => {
+    if (!selected) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setSelected(null);
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [selected]);
+
   return (
     <section
       ref={sectionRef}
@@ -161,9 +171,9 @@ export default function AmenitiesSection() {
             className="absolute inset-0"
             style={{ background: "rgba(0,0,0,0.80)" }}
             onClick={() => setSelected(null)}
-            onKeyDown={(e) => e.key === "Escape" && setSelected(null)}
+            onKeyDown={() => {}}
           />
-          <div className="glass-modal-bg relative w-full max-w-lg z-10 overflow-hidden">
+          <div className="glass-modal-bg relative w-full max-w-lg z-10 overflow-hidden max-h-[90vh] overflow-y-auto">
             <button
               type="button"
               onClick={() => setSelected(null)}
@@ -172,14 +182,14 @@ export default function AmenitiesSection() {
             >
               <X size={18} />
             </button>
-            <div className="h-56 overflow-hidden">
+            <div className="h-56 overflow-hidden shrink-0">
               <img
                 src={selected.image}
                 alt={selected.nameEs}
                 className="w-full h-full object-cover"
               />
             </div>
-            <div className="p-6">
+            <div className="p-5 sm:p-6">
               <span className="text-xs font-bold tracking-widest gold-text">
                 {t("AMENIDAD PREMIUM", "PREMIUM AMENITY")}
               </span>

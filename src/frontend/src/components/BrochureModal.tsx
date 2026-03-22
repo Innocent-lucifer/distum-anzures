@@ -8,7 +8,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Download, Loader2, MessageCircle, X } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useLang } from "../contexts/LanguageContext";
 import { useActor } from "../hooks/useActor";
@@ -40,6 +40,16 @@ export default function BrochureModal({ open, onClose }: Props) {
   const { data: brochureCount } = useGetBrochureCount();
 
   const displayCount = brochureCount && brochureCount > 0 ? brochureCount : 47;
+
+  // Escape key to close
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") handleClose();
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [open]);
 
   if (!open) return null;
 
@@ -131,10 +141,10 @@ export default function BrochureModal({ open, onClose }: Props) {
         className="absolute inset-0"
         style={{ background: "rgba(0,0,0,0.75)" }}
         onClick={handleClose}
-        onKeyDown={(e) => e.key === "Escape" && handleClose()}
+        onKeyDown={() => {}}
       />
 
-      <div className="glass-modal-bg relative w-full max-w-md p-8 z-10">
+      <div className="glass-modal-bg relative w-full max-w-md p-5 sm:p-8 z-10 max-h-[90vh] overflow-y-auto">
         <button
           type="button"
           onClick={handleClose}

@@ -8,6 +8,7 @@ import FAQSection from "./components/FAQSection";
 import Footer from "./components/Footer";
 import HeroSection from "./components/HeroSection";
 import IntentSection from "./components/IntentSection";
+import InvestmentCalculatorSection from "./components/InvestmentCalculatorSection";
 import LocationSection from "./components/LocationSection";
 import Navbar from "./components/Navbar";
 import NeighborhoodSection from "./components/NeighborhoodSection";
@@ -47,6 +48,7 @@ function FloatingBrochureButton({ onClick }: { onClick: () => void }) {
 
 function AppInner() {
   const [brochureOpen, setBrochureOpen] = useState(false);
+  const [calculatorOpen, setCalculatorOpen] = useState(false);
   const { setLang } = useLang();
   const { data: siteSettings } = useGetSiteSettings();
 
@@ -58,11 +60,11 @@ function AppInner() {
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
-      <Navbar />
+      <Navbar onOpenCalculator={() => setCalculatorOpen(true)} />
       <main>
         <HeroSection onBrochureClick={() => setBrochureOpen(true)} />
         <StatsSection />
-        <IntentSection />
+        <IntentSection onOpenCalculator={() => setCalculatorOpen(true)} />
         <PropertyExplorer />
         <NeighborhoodSection />
         <AmenitiesSection />
@@ -76,6 +78,10 @@ function AppInner() {
       <BrochureModal
         open={brochureOpen}
         onClose={() => setBrochureOpen(false)}
+      />
+      <InvestmentCalculatorSection
+        open={calculatorOpen}
+        onClose={() => setCalculatorOpen(false)}
       />
       <Toaster richColors position="top-right" />
     </div>
