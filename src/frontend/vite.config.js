@@ -5,6 +5,7 @@ import { defineConfig } from "vite";
 export default defineConfig({
   logLevel: "error",
   build: {
+    outDir: "dist", // ✅ ADD THIS LINE
     emptyOutDir: true,
     sourcemap: false,
     minify: false,
