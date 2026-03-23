@@ -62,10 +62,10 @@ export default function BrochureModal({ open, onClose }: Props) {
     }
     setLoading(true);
 
-    let icpSuccess = false;
+    let backendSuccess = false;
     let formspreeSuccess = false;
 
-    // 1. Try ICP first
+    // 1. Try the app backend first
     try {
       if (actor) {
         await actor.captureLead({
@@ -78,14 +78,14 @@ export default function BrochureModal({ open, onClose }: Props) {
           timestamp: BigInt(Date.now()),
         } as any);
         await actor.recordBrochureDownload(email);
-        icpSuccess = true;
+        backendSuccess = true;
       }
     } catch {
-      // ICP failed — will fall through to Formspree
+      // Backend failed, so fall through to Formspree.
     }
 
-    // 2. If ICP didn't succeed, try Formspree
-    if (!icpSuccess) {
+    // 2. If the backend didn't succeed, try Formspree
+    if (!backendSuccess) {
       try {
         const res = await fetch(FORMSPREE_ENDPOINT, {
           method: "POST",
@@ -105,7 +105,7 @@ export default function BrochureModal({ open, onClose }: Props) {
 
     setLoading(false);
 
-    if (icpSuccess || formspreeSuccess) {
+    if (backendSuccess || formspreeSuccess) {
       window.fbq?.("track", "Lead", { source: "brochure" });
       window.gtag?.("event", "generate_lead", { source: "brochure" });
       setSuccess(true);

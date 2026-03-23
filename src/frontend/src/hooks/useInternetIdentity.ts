@@ -25,7 +25,7 @@ export type InternetIdentityContext = {
    * or completing the login process. */
   identity?: Identity;
 
-  /** Connect to Internet Identity to login the user. */
+  /** Placeholder login hook kept for compatibility with the existing app shell. */
   login: () => void;
 
   /** Clears the identity from the state and local storage. Effectively "logs the user out". */
@@ -132,7 +132,7 @@ export function InternetIdentityProvider({
 
   useEffect(() => {
     setIdentity(undefined);
-  }, [createOptions]);
+  }, []);
 
   const value = useMemo<ProviderValue>(
     () => ({

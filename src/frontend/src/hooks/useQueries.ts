@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import type { Lead, SiteSettings } from "../backend.d";
-import { Source } from "../backend.d";
+import type { Lead, SiteSettings } from "../backend";
+import { Source } from "../backend";
 import { useActor } from "./useActor";
 
 export function useGetAllLeads() {

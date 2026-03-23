@@ -3,12 +3,10 @@
   "files": {
     "ignore": [
       "**/backend.ts",
-      "**/backend.d.ts",
       "dist/**",
       "node_modules/**",
       "build/**",
       "*.config.js",
-      "src/declarations/**",
       "src/config.ts"
     ]
   },

@@ -1,7 +1,7 @@
 # Distum Anzures
 
 ## Current State
-Full-stack bilingual real estate landing page on ICP. WhatsApp number `5215521864824` (+52 55 2186 4824) is used in several places but not displayed visually in all WhatsApp CTA holders. Investment calculator section is always rendered inline in the page. Some benefit items in IntentSection use emoji icons. Mobile and cross-device layout is mostly optimized but can be tightened.
+Full-stack bilingual real estate landing page running as a standalone web app. WhatsApp number `5215521864824` (+52 55 2186 4824) is used in several places but not displayed visually in all WhatsApp CTA holders. Investment calculator section is always rendered inline in the page. Some benefit items in IntentSection use emoji icons. Mobile and cross-device layout is mostly optimized but can be tightened.
 
 ## Requested Changes (Diff)
 

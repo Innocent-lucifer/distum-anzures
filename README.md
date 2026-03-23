@@ -1,31 +1,27 @@
-## Distum Anzures - Vercel Independent Stack
+## Distum Anzures
 
-This project is now configured to run independently on Vercel without ICP/Caffeine runtime services.
+Standalone real estate website built for Vercel.
 
-### Architecture
+### Stack
 
-- Frontend: Vite + React (`src/frontend`)
-- Backend API: Vercel serverless function (`api/backend.js`)
-- Persistence: Vercel KV (`@vercel/kv`)
+- Frontend: Vite + React + TypeScript in `src/frontend`
+- Backend: Vercel serverless function in `api/backend.js`
+- Persistence: `@vercel/kv`
 
-### Local Development
+### Run Locally
 
-1. Install dependencies:
-   - `pnpm install`
-2. Run frontend locally:
-   - `pnpm --filter @caffeine/template-frontend dev`
-3. Run on Vercel (recommended for full API parity):
-   - `vercel dev`
+1. Install dependencies with `pnpm install`
+2. Start the frontend with `pnpm --filter distum-anzures-frontend dev`
+3. Use `vercel dev` when you want the local frontend and `/api/backend` to run together
 
-### Deploy to Vercel
+### Deploy
 
-1. Import the repository into Vercel.
-2. Ensure `vercel.json` is used from the repo root.
-3. Add KV integration in Vercel dashboard.
-4. Set environment variables automatically via the KV integration.
-5. Deploy.
+1. Import the repository into Vercel
+2. Keep the repo root as the project root so `vercel.json` is applied
+3. Connect a Redis/KV-compatible store for the backend data layer
+4. Deploy
 
 ### Notes
 
-- Existing frontend behavior and data contract are preserved by keeping the same backend method names used by the UI.
-- All lead and admin settings actions now flow through `/api/backend`.
+- The frontend keeps the existing `useActor` compatibility wrapper, but it now talks to the standalone `/api/backend` service instead of an ICP canister.
+- In local frontend-only development, the app falls back to browser `localStorage` unless `VITE_USE_REAL_API=true` is set.

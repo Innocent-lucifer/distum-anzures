@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "pnpm --filter @caffeine/template-frontend run build",
+  "buildCommand": "pnpm --filter distum-anzures-frontend run build",
   "outputDirectory": "src/frontend/dist",
   "installCommand": "pnpm install --frozen-lockfile",
   "routes": [

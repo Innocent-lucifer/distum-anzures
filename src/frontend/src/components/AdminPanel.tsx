@@ -39,8 +39,8 @@ import {
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import type { Lead } from "../backend.d";
-import { Intent, Language, Source } from "../backend.d";
+import type { Lead } from "../backend";
+import { Intent, Language, Source } from "../backend";
 import { useActor } from "../hooks/useActor";
 import {
   useGetAllLeads,
