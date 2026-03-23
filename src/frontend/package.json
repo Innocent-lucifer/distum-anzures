@@ -8,7 +8,7 @@
     "build:skip-bindings": "vite build && pnpm copy:env",
     "build": "vite build && pnpm copy:env",
     "preview": "vite preview",
-    "copy:env": "cp env.json dist/",
+    "copy:env": "[ -f env.json ] && cp env.json dist/ || echo 'no env file'",
     "typecheck": "tsc --noEmit --incremental --tsBuildInfoFile node_modules/.cache/tsconfig.tsbuildinfo --pretty",
     "check": "biome check src",
     "fix": "biome check --write src"
