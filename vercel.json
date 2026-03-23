@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "buildCommand": "pnpm --filter @caffeine/template-frontend run build",
+  "outputDirectory": "src/frontend/dist",
+  "installCommand": "pnpm install --frozen-lockfile",
+  "routes": [
+    { "src": "/api/(.*)", "dest": "/api/backend.js" },
+    { "src": "/(.*)", "dest": "/$1" }
+  ]
+}

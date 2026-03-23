@@ -14,8 +14,7 @@ import { useLang } from "../contexts/LanguageContext";
 import { useActor } from "../hooks/useActor";
 import { useGetBrochureCount } from "../hooks/useQueries";
 
-// Get your free form ID at https://formspree.io — replace REPLACE_WITH_YOUR_FORM_ID
-const FORMSPREE_ENDPOINT = "https://formspree.io/f/REPLACE_WITH_YOUR_FORM_ID";
+const FORMSPREE_ENDPOINT = "https://formspree.io/f/maqpzrwp";
 
 const WA_NUMBER = "5215521864824";
 const WA_MSG = encodeURIComponent(

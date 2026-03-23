@@ -38,6 +38,7 @@ export default function Navbar({
   const { lang, toggle, t } = useLang();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [logoFailed, setLogoFailed] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 30);
@@ -67,12 +68,23 @@ export default function Navbar({
       >
         {/* Logo */}
         <a href="/" className="flex items-center gap-2.5 shrink-0">
-          <img
-            src={LOGO}
-            alt="Distum Anzures"
-            className="h-9 w-9 rounded-lg object-contain"
-            style={{ background: "#f5e478" }}
-          />
+          {logoFailed ? (
+            <div
+              className="h-9 w-9 rounded-lg flex items-center justify-center text-xs font-bold"
+              style={{ background: "#f5e478", color: "#071a2b" }}
+              aria-label="Distum Anzures"
+            >
+              DA
+            </div>
+          ) : (
+            <img
+              src={LOGO}
+              alt="Distum Anzures"
+              className="h-9 w-9 rounded-lg object-contain"
+              style={{ background: "#f5e478" }}
+              onError={() => setLogoFailed(true)}
+            />
+          )}
           <span className="font-display text-base font-bold gold-text tracking-wider hidden sm:block">
             DISTUM <span className="font-light text-white">ANZURES</span>
           </span>

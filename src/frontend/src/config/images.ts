@@ -1,15 +1,11 @@
 /**
  * DISTUM ANZURES — Image Configuration
  *
- * Replace the placeholder paths below with your real project images.
- * All images should be placed in: src/frontend/public/assets/uploads/
- * Then update the paths here (use /assets/uploads/your-image.jpg format).
- *
- * Current placeholders use generated images as fallback.
+ * Image assets are served from: src/frontend/public/assets/
  */
 
 // ─── HERO ────────────────────────────────────────────────────────────────────
-export const HERO_BG = "/assets/uploads/1_landing-2.png";
+export const HERO_BG = "/assets/1_landing.png";
 
 // ─── PROPERTY IMAGES ─────────────────────────────────────────────────────────
 // TODO: Replace each path with your real property renders/photos
@@ -33,4 +29,4 @@ export const AMENITY_IMAGES = {
 };
 
 // ─── LOGO ─────────────────────────────────────────────────────────────────────
-export const LOGO = "/assets/uploads/IMG_7326-1.JPG";
+export const LOGO = "/assets/IMG_7326.JPG";

@@ -1,179 +1,237 @@
 import {
-  createActor,
   type backendInterface,
   type CreateActorOptions,
-  ExternalBlob,
+  type Intent,
+  type Lead,
+  type SiteSettings,
+  type Source,
 } from "./backend";
-import { StorageClient } from "./utils/StorageClient";
-import { HttpAgent } from "@icp-sdk/core/agent";
 
-const DEFAULT_STORAGE_GATEWAY_URL = "https://blob.caffeine.ai";
-const DEFAULT_BUCKET_NAME = "default-bucket";
-const DEFAULT_PROJECT_ID = "0000000-0000-0000-0000-00000000000";
+type ApiMethod = keyof backendInterface;
 
-interface JsonConfig {
-  backend_host: string;
-  backend_canister_id: string;
-  project_id: string;
-  ii_derivation_origin: string;
-}
+type JsonLead = Omit<Lead, "timestamp"> & { timestamp: string };
 
 interface Config {
-  backend_host?: string;
-  backend_canister_id: string;
-  storage_gateway_url: string;
-  bucket_name: string;
-  project_id: string;
-  ii_derivation_origin?: string;
+  apiBaseUrl: string;
 }
 
 let configCache: Config | null = null;
+const LOCAL_DATA_KEY = "distum_local_backend_v1";
+const PREFER_LOCAL_BACKEND =
+  import.meta.env.DEV && import.meta.env.VITE_USE_REAL_API !== "true";
+
+interface LocalData {
+  leads: Record<string, JsonLead>;
+  brochureDownloads: Record<string, number>;
+  propertyAvailability: Record<string, string>;
+  siteSettings: SiteSettings;
+}
+
+const DEFAULT_LOCAL_DATA: LocalData = {
+  leads: {},
+  brochureDownloads: {},
+  propertyAvailability: {},
+  siteSettings: { defaultLanguage: "spanish" as SiteSettings["defaultLanguage"] },
+};
 
 export async function loadConfig(): Promise<Config> {
-  if (configCache) {
-    return configCache;
-  }
-  const backendCanisterId = process.env.CANISTER_ID_BACKEND;
-  const envBaseUrl = process.env.BASE_URL || "/";
-  const baseUrl = envBaseUrl.endsWith("/") ? envBaseUrl : `${envBaseUrl}/`;
+  if (configCache) return configCache;
+  configCache = { apiBaseUrl: "" };
+  return configCache;
+}
+
+function toJsonLead(lead: Lead): JsonLead {
+  return { ...lead, timestamp: lead.timestamp.toString() };
+}
+
+function fromJsonLead(lead: JsonLead): Lead {
+  return { ...lead, timestamp: BigInt(lead.timestamp) };
+}
+
+function getLocalData(): LocalData {
+  if (typeof window === "undefined") return structuredClone(DEFAULT_LOCAL_DATA);
   try {
-    const response = await fetch(`${baseUrl}env.json`);
-    const config = (await response.json()) as JsonConfig;
-    if (!backendCanisterId && config.backend_canister_id === "undefined") {
-      console.error("CANISTER_ID_BACKEND is not set");
-      throw new Error("CANISTER_ID_BACKEND is not set");
-    }
-
-    const fullConfig = {
-      backend_host:
-        config.backend_host === "undefined" ? undefined : config.backend_host,
-      backend_canister_id: (config.backend_canister_id === "undefined"
-        ? backendCanisterId
-        : config.backend_canister_id) as string,
-      storage_gateway_url: process.env.STORAGE_GATEWAY_URL ?? "nogateway",
-      bucket_name: DEFAULT_BUCKET_NAME,
-      project_id:
-        config.project_id !== "undefined"
-          ? config.project_id
-          : DEFAULT_PROJECT_ID,
-      ii_derivation_origin:
-        config.ii_derivation_origin === "undefined"
-          ? undefined
-          : config.ii_derivation_origin,
-    };
-    configCache = fullConfig;
-    return fullConfig;
+    const raw = window.localStorage.getItem(LOCAL_DATA_KEY);
+    if (!raw) return structuredClone(DEFAULT_LOCAL_DATA);
+    return JSON.parse(raw) as LocalData;
   } catch {
-    if (!backendCanisterId) {
-      console.error("CANISTER_ID_BACKEND is not set");
-      throw new Error("CANISTER_ID_BACKEND is not set");
+    return structuredClone(DEFAULT_LOCAL_DATA);
+  }
+}
+
+function saveLocalData(data: LocalData): void {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(LOCAL_DATA_KEY, JSON.stringify(data));
+}
+
+async function callLocalBackend<T>(method: ApiMethod, params: unknown[] = []): Promise<T> {
+  const data = getLocalData();
+  switch (method) {
+    case "captureLead": {
+      const [lead] = params as [JsonLead];
+      data.leads[lead.email] = lead;
+      saveLocalData(data);
+      return undefined as T;
     }
-    const fallbackConfig = {
-      backend_host: undefined,
-      backend_canister_id: backendCanisterId,
-      storage_gateway_url: DEFAULT_STORAGE_GATEWAY_URL,
-      bucket_name: DEFAULT_BUCKET_NAME,
-      project_id: DEFAULT_PROJECT_ID,
-      ii_derivation_origin: undefined,
-    };
-    return fallbackConfig;
+    case "recordBrochureDownload": {
+      const [email] = params as [string];
+      const count = (data.brochureDownloads[email] ?? 0) + 1;
+      data.brochureDownloads[email] = count;
+      saveLocalData(data);
+      return String(count) as T;
+    }
+    case "getAllLeads":
+      return Object.values(data.leads).sort((a, b) => a.email.localeCompare(b.email)) as T;
+    case "getBrochureDownloads": {
+      const [email] = params as [string];
+      return String(data.brochureDownloads[email] ?? 0) as T;
+    }
+    case "getLeadsByIntent": {
+      const [intent] = params as [Intent];
+      return Object.values(data.leads)
+        .filter((lead) => lead.intent === intent)
+        .sort((a, b) => a.email.localeCompare(b.email)) as T;
+    }
+    case "getLeadsBySource": {
+      const [source] = params as [Source];
+      return Object.values(data.leads)
+        .filter((lead) => lead.source === source)
+        .sort((a, b) => a.email.localeCompare(b.email)) as T;
+    }
+    case "getTotalLeads":
+      return String(Object.keys(data.leads).length) as T;
+    case "getTotalBrochureRequests":
+      return String(
+        Object.values(data.leads).filter((lead) => lead.source === "brochure").length,
+      ) as T;
+    case "getSiteSettings":
+      return data.siteSettings as T;
+    case "saveSiteSettings": {
+      const [settings] = params as [SiteSettings];
+      data.siteSettings = settings;
+      saveLocalData(data);
+      return undefined as T;
+    }
+    case "getPropertyAvailability":
+      return Object.entries(data.propertyAvailability) as T;
+    case "setPropertyAvailability": {
+      const [propId, status] = params as [string, string];
+      data.propertyAvailability[propId] = status;
+      saveLocalData(data);
+      return undefined as T;
+    }
+    default:
+      throw new Error(`Unknown local method: ${method}`);
   }
 }
 
-function extractAgentErrorMessage(error: string): string {
-  const errorString = String(error);
-  const match = errorString.match(/with message:\s*'([^']+)'/s);
-  return match ? match[1] : errorString;
-}
-
-function processError(e: unknown): never {
-  if (e && typeof e === "object" && "message" in e) {
-    throw new Error(extractAgentErrorMessage(`${e.message}`));
+async function callBackend<T>(method: ApiMethod, params: unknown[] = []): Promise<T> {
+  if (PREFER_LOCAL_BACKEND) {
+    return callLocalBackend<T>(method, params);
   }
-  throw e;
+
+  const { apiBaseUrl } = await loadConfig();
+  try {
+    const response = await fetch(`${apiBaseUrl}/api/backend`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ method, params }),
+    });
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        return callLocalBackend<T>(method, params);
+      }
+      const message = await response.text();
+      throw new Error(message || `Backend request failed: ${response.status}`);
+    }
+
+    return (await response.json()) as T;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "";
+    if (
+      message.includes("Failed to fetch") ||
+      message.includes("NetworkError") ||
+      message.includes("fetch failed")
+    ) {
+      return callLocalBackend<T>(method, params);
+    }
+    throw error;
+  }
 }
 
 async function maybeLoadMockBackend(): Promise<backendInterface | null> {
-  if (import.meta.env.VITE_USE_MOCK !== "true") {
-    return null;
+  if (import.meta.env.VITE_USE_MOCK !== "true") return null;
+
+  const mockModules = import.meta.glob("./mocks/backend.{ts,tsx,js,jsx}");
+  const path = Object.keys(mockModules)[0];
+  if (!path) return null;
+
+  const mod = (await mockModules[path]()) as { mockBackend?: backendInterface };
+  return mod.mockBackend ?? null;
+}
+
+class VercelBackendClient implements backendInterface {
+  async captureLead(lead: Lead): Promise<void> {
+    await callBackend<void>("captureLead", [toJsonLead(lead)]);
   }
 
-  try {
-    // If VITE_USE_MOCK is enabled, try to load a mock backend module *if it exists*.
-    // We use import.meta.glob so builds don't fail when the mock file is absent.
-    const mockModules = import.meta.glob("./mocks/backend.{ts,tsx,js,jsx}");
+  async getAllLeads(): Promise<Array<Lead>> {
+    const leads = await callBackend<JsonLead[]>("getAllLeads");
+    return leads.map(fromJsonLead);
+  }
 
-    const path = Object.keys(mockModules)[0];
-    if (!path) return null;
+  async getBrochureDownloads(email: string): Promise<bigint> {
+    const count = await callBackend<string>("getBrochureDownloads", [email]);
+    return BigInt(count);
+  }
 
-    const mod = (await mockModules[path]()) as {
-      mockBackend?: backendInterface;
-    };
+  async getLeadsByIntent(intent: Intent): Promise<Array<Lead>> {
+    const leads = await callBackend<JsonLead[]>("getLeadsByIntent", [intent]);
+    return leads.map(fromJsonLead);
+  }
 
-    return mod.mockBackend ?? null;
-  } catch {
-    return null;
+  async getLeadsBySource(source: Source): Promise<Array<Lead>> {
+    const leads = await callBackend<JsonLead[]>("getLeadsBySource", [source]);
+    return leads.map(fromJsonLead);
+  }
+
+  async getTotalLeads(): Promise<bigint> {
+    const count = await callBackend<string>("getTotalLeads");
+    return BigInt(count);
+  }
+
+  async getTotalBrochureRequests(): Promise<bigint> {
+    const count = await callBackend<string>("getTotalBrochureRequests");
+    return BigInt(count);
+  }
+
+  async recordBrochureDownload(email: string): Promise<bigint> {
+    const count = await callBackend<string>("recordBrochureDownload", [email]);
+    return BigInt(count);
+  }
+
+  async getSiteSettings(): Promise<SiteSettings> {
+    return callBackend<SiteSettings>("getSiteSettings");
+  }
+
+  async saveSiteSettings(settings: SiteSettings): Promise<void> {
+    await callBackend<void>("saveSiteSettings", [settings]);
+  }
+
+  async getPropertyAvailability(): Promise<Array<[string, string]>> {
+    return callBackend<Array<[string, string]>>("getPropertyAvailability");
+  }
+
+  async setPropertyAvailability(propId: string, status: string): Promise<void> {
+    await callBackend<void>("setPropertyAvailability", [propId, status]);
   }
 }
 
 export async function createActorWithConfig(
-  options?: CreateActorOptions,
+  _options?: CreateActorOptions,
 ): Promise<backendInterface> {
-  // Attempt to load mock backend if enabled
   const mock = await maybeLoadMockBackend();
-  if (mock) {
-    return mock;
-  }
-
-  const config = await loadConfig();
-  const resolvedOptions = options ?? {};
-  const agent = new HttpAgent({
-    ...resolvedOptions.agentOptions,
-    host: config.backend_host,
-  });
-  if (config.backend_host?.includes("localhost")) {
-    await agent.fetchRootKey().catch((err) => {
-      console.warn(
-        "Unable to fetch root key. Check to ensure that your local replica is running",
-      );
-      console.error(err);
-    });
-  }
-  const actorOptions = {
-    ...resolvedOptions,
-    agent: agent,
-    processError,
-  };
-
-  const storageClient = new StorageClient(
-    config.bucket_name,
-    config.storage_gateway_url,
-    config.backend_canister_id,
-    config.project_id,
-    agent,
-  );
-
-  const MOTOKO_DEDUPLICATION_SENTINEL = "!caf!";
-
-  const uploadFile = async (file: ExternalBlob): Promise<Uint8Array> => {
-    const { hash } = await storageClient.putFile(
-      await file.getBytes(),
-      file.onProgress,
-    );
-    return new TextEncoder().encode(MOTOKO_DEDUPLICATION_SENTINEL + hash);
-  };
-
-  const downloadFile = async (bytes: Uint8Array): Promise<ExternalBlob> => {
-    const hashWithPrefix = new TextDecoder().decode(new Uint8Array(bytes));
-    const hash = hashWithPrefix.substring(MOTOKO_DEDUPLICATION_SENTINEL.length);
-    const url = await storageClient.getDirectURL(hash);
-    return ExternalBlob.fromURL(url);
-  };
-
-  return createActor(
-    config.backend_canister_id,
-    uploadFile,
-    downloadFile,
-    actorOptions,
-  );
+  if (mock) return mock;
+  return new VercelBackendClient();
 }

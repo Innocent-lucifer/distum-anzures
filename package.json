@@ -12,6 +12,9 @@
     "check": "pnpm -r --if-present run check",
     "fix": "pnpm -r --if-present run fix"
   },
+  "dependencies": {
+    "@vercel/kv": "^3.0.0"
+  },
   "devDependencies": {
     "sharp": "^0.34.4"
   }
