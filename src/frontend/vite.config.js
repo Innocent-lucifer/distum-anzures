@@ -3,9 +3,8 @@ import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 
 export default defineConfig({
-  logLevel: "error",
   build: {
-    outDir: "dist", // ✅ ADD THIS LINE
+    outDir: "dist",
     emptyOutDir: true,
     sourcemap: false,
     minify: false,
